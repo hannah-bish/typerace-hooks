@@ -1,26 +1,63 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useState, useEffect, useContext } from 'react';
+import { ThemeContext } from './ThemeProvider';
 
-function App() {
+const SNIPPETS = [
+  'Bears, beets, battlestar galactica',
+  "What's Forrest Gump's password? 1Forrest1",
+  'Where do programmers like to hangout? The Foo Bar'
+];
+const INITIAL_GAME_STATE = { victory: false, startTime: null, endTime: null };
+
+const App = () => {
+  const [userText, setUserText] = useState('');
+  const [snippet, setSnippet] = useState('');
+  const [gameState, setGameState] = useState(INITIAL_GAME_STATE);
+  const { theme, toggleTheme } = useContext(ThemeContext);
+
+
+  useEffect(() => {
+    if (gameState.victory) {
+      document.title = 'Victory!'
+    };
+  });
+
+  const updateUserText = event => {
+    setUserText(event.target.value);
+    
+    if (event.target.value === snippet) {
+      setGameState({
+        ...gameState,
+        victory: true,
+        endTime: new Date().getTime() - gameState.startTime
+      });
+    }
+   }
+
+  const chooseSnippet = snippetIndex => () => {
+    setSnippet(SNIPPETS[snippetIndex]);
+    setGameState({ ...gameState, startTime: new Date().getTime() });
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      <button onClick={toggleTheme}>
+        Switch to {theme === 'light' ? 'dark' : 'light'} mode
+      </button>
+      <h2>Type Race</h2>
+      <h3>Snippet</h3>
+      {snippet}
+      <h4>{gameState.victory ? `Done! 🎉 Time: ${gameState.endTime}ms` : null}</h4>
+      <input value={userText} onChange={updateUserText} />
+      <hr />
+      {
+        SNIPPETS.map((SNIPPET, index) => (
+          <button onClick={chooseSnippet(index)} key={index}>
+            {SNIPPET.substring(0, 10)}...
+          </button>
+        ))
+      }
     </div>
-  );
+  )
 }
 
 export default App;
